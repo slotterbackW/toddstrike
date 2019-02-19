@@ -1,132 +1,110 @@
 import turtle
+from plane import *
 
+# Constants
 SPEED = 2
 ROTATE_SPEED = 2
-BULLET_SPEED = 10
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 
-p1_right = False
-p1_left = False
-
-p2_right = False
-p2_left = False
-
-def p1_rotate_right():
-    global p1_left
-    global p1_right
-    p1_right = True
-    p1_left = False
-
-def p1_rotate_left():
-    global p1_left
-    global p1_right
-    p1_left = True
-    p1_right = False
-
-def p1_reset():
-    global p1_left
-    global p1_right
-    p1_left = False
-    p1_right = False
-
-def p2_rotate_right():
-    global p2_left
-    global p2_right
-    p2_right = True
-    p2_left = False
-
-def p2_rotate_left():
-    global p2_left
-    global p2_right
-    p2_left = True
-    p2_right = False
-
-def p2_reset():
-    global p2_left
-    global p2_right
-    p2_left = False
-    p2_right = False
-
-def move_forward(players):
-    if p1_left == True:
-        players[0].left(ROTATE_SPEED)
-    if p1_right == True:
-        players[0].right(ROTATE_SPEED)
-
-    if p2_left == True:
-        players[1].left(ROTATE_SPEED)
-    if p2_right == True:
-        players[1].right(ROTATE_SPEED)
-
-    for player in players:
-        player.forward(SPEED)
-
-def isHit(player, bullet):
-    px = player.xcor()
-    py = player.ycor()
-    bx = bullet.xcor()
-    by = bullet.ycor()
-    if abs(px - bx) < 5 and abs(py - by) < 5:
-        return True
-    else:
-        return False
+def move_planes(planes):
+    for plane in planes:
+        plane.fly_forward()
 
 
-def bullets_hit(players, bullets):
+def in_range(x1, y1, x2, y2):
+    '''
+    returns whether or not (x1, y1) is within 5 units of (x2, y2)
+    '''
+    return abs(x1 - x2) < 5 and abs(y1 - y2) < 5
+
+def is_plane_hit(plane, bullets):
+    '''
+    Checks if the given plane has been hit by (is within range of) any of the given
+    bullets
+    '''
     for bullet in bullets:
-        if isHit(players[0], bullet) or isHit(players[1], bullet):
+        if in_range(bullet.xcor(), bullet.ycor(), plane.xcor(), plane.ycor()):
             return True
     return False
 
+def game_over(planes):
+    '''
+    Returns true if any plane has been hit by a bullet or is off-screen,
+    false otherwise
+    '''
+    p1 = planes[0]
+    p2 = planes[1]
 
-def move_bullets(bullets):
-    for i, bullet in reversed(list(enumerate(bullets))):
-        # if bullets are off screen, delete them
-        if (bullet.xcor() > SCREEN_WIDTH / 2  or bullet.xcor() < -SCREEN_WIDTH / 2
-            or bullet.ycor() > SCREEN_HEIGHT / 2 or bullet.ycor() < -SCREEN_HEIGHT / 2):
-            bullets.pop(i)
-        # otherwise move bullet
-        else:
-            bullet.forward(BULLET_SPEED)
+    return (is_plane_hit(p2, p1.get_bullets()) or is_plane_hit(p1, p2.get_bullets())
+        or is_off_screen(p1) or is_off_screen(p2))
 
-def shoot_bullet(player, bullets):
-    bullet = turtle.Turtle()
-    bullet.ht()
-    bullet.penup()
-    bullet.setpos(player.xcor(), player.ycor())
-    bullet.setheading(player.heading())
-    bullet.forward(10)
-    bullet.pendown()
-    bullet.st()
-    bullets.append(bullet)
 
-def bind_keys(screen, p1, p2, bullets):
-    # Player 1
-    screen.onkey(lambda: p1_rotate_right(), 'Right')
-    screen.onkey(lambda: p1_rotate_left(), 'Left')
-    screen.onkey(lambda: p1_reset(), 'Up')
-    screen.onkey(lambda: shoot_bullet(p1, bullets), 'm')
-    # Player 2
-    screen.onkey(lambda: p2_rotate_right(), 'd')
-    screen.onkey(lambda: p2_rotate_left(), 'a')
-    screen.onkey(lambda: p2_reset(), 'w')
-    screen.onkey(lambda: shoot_bullet(p2, bullets), 's')
+def is_off_screen(turtle):
+    '''
+    Returns true if the given turtle is off the screen
+    '''
+    tx = turtle.xcor()
+    ty = turtle.ycor()
 
-def main():
+    return (tx > SCREEN_WIDTH / 2  or tx < -SCREEN_WIDTH / 2
+        or ty > SCREEN_HEIGHT / 2 or ty < -SCREEN_HEIGHT / 2)
+
+def move_bullets(planes):
+    '''
+    Advances all bullets forward, and removes those that have flown off-screen
+    '''
+    for plane in planes:
+        for i, bullet in reversed(list(enumerate(plane.get_bullets()))):
+            if is_off_screen(bullet):
+                plane.get_bullets().pop(i)
+            else:
+                bullet.move()
+
+def setup_screen():
+    '''
+    Sets up the game window using the SCREEN_WIDTH and SCREEN_HEIGHT variable
+    '''
     wn = turtle.Screen()
     wn.setup(width=SCREEN_WIDTH, height=SCREEN_HEIGHT, startx=None, starty=None)
-    p1 = turtle.Turtle()
-    p2 = turtle.Turtle()
+    # Remove re-render delay
     turtle.delay(0)
-    players = [p1, p2]
+    return wn
+
+def update_screen(planes):
+    move_bullets(planes)
+    move_planes(planes)
+
+def bind_keys(screen, p1, p2, bullets):
+    # Player 1 keys
+    screen.onkey(lambda: p1.rotate_right(), 'Right')
+    screen.onkey(lambda: p1.rotate_left(), 'Left')
+    screen.onkey(lambda: p1.go_straight(), 'Up')
+    screen.onkey(lambda: p1.shoot_bullet(), 'm')
+    # Player 2 keys
+    screen.onkey(lambda: p2.rotate_right(), 'd')
+    screen.onkey(lambda: p2.rotate_left(), 'a')
+    screen.onkey(lambda: p2.go_straight(), 'w')
+    screen.onkey(lambda: p2.shoot_bullet(), 's')
+
+def main():
+    # Create game screen
+    wn = setup_screen()
+    # Setup model
+    # id, x, y, heading, speed, turn_speed
+    p1 = Plane(1, 0, 0, 0, 1, 2)
+    p2 = Plane(2, 0, 0, 180, 1, 2)
+    planes = [p1, p2]
     bullets = []
+
     bind_keys(wn, p1, p2, bullets)
     wn.listen()
-    while not bullets_hit(players, bullets):
+
+    while not game_over(planes):
+        # Wait to update view until all turtle updates have finished
         turtle.tracer(0,0)
-        move_forward(players)
-        move_bullets(bullets)
+        update_screen(planes)
+        # Now update view
         turtle.update()
     print("Game over!")
     wn.mainloop()
