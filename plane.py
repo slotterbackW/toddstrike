@@ -5,12 +5,15 @@ class Plane:
     '''
     A wrapper around the turtle class used to represent the planes in the game
     '''
-    def __init__(self, id, x, y, heading, speed, turn_speed):
+    def __init__(self, id, x, y, heading, speed, turn_speed, color):
         self.id = id
 
         self.turtle = turtle.Turtle()
+        self.turtle.ht()
         self.turtle.setposition(x, y)
         self.turtle.setheading(heading)
+        self.turtle.color(color)
+        self.turtle.st()
 
         self.speed = speed
         self.turn_speed = turn_speed
