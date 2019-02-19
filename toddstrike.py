@@ -1,5 +1,6 @@
 import turtle
 from plane import *
+from toddstrike_name import get_name as get_toddstrike_name
 
 # Constants
 SPEED = 2
@@ -106,6 +107,9 @@ def main():
 
     bind_keys(wn, p1, p2, bullets)
     wn.listen()
+
+    # Show game title
+    display_name()
 
     while not game_over(planes):
         # Wait to update view until all turtle updates have finished
