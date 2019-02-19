@@ -4,8 +4,9 @@ from plane import *
 # Constants
 SPEED = 2
 ROTATE_SPEED = 2
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 1000
+RANGE = 3
 
 def move_planes(planes):
     for plane in planes:
@@ -16,7 +17,7 @@ def in_range(x1, y1, x2, y2):
     '''
     returns whether or not (x1, y1) is within 5 units of (x2, y2)
     '''
-    return abs(x1 - x2) < 5 and abs(y1 - y2) < 5
+    return abs(x1 - x2) < RANGE and abs(y1 - y2) < RANGE
 
 def is_plane_hit(plane, bullets):
     '''
@@ -71,6 +72,12 @@ def setup_screen():
     turtle.delay(0)
     return wn
 
+def display_name():
+    name = get_toddstrike_name()
+    turtle.ht()
+    turtle.write(name, align='center', font=("Silom", 32, "bold"))
+
+
 def update_screen(planes):
     move_bullets(planes)
     move_planes(planes)
@@ -91,9 +98,9 @@ def main():
     # Create game screen
     wn = setup_screen()
     # Setup model
-    # id, x, y, heading, speed, turn_speed
-    p1 = Plane(1, 0, 0, 0, 1, 2)
-    p2 = Plane(2, 0, 0, 180, 1, 2)
+    # id, x, y, heading, speed, turn_speed, color
+    p1 = Plane(1, 0, 0, 0, 1, 2, 'blue')
+    p2 = Plane(2, 0, 0, 180, 1, 2, 'red')
     planes = [p1, p2]
     bullets = []
 

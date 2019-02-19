@@ -9,7 +9,6 @@ class Bullet:
         self.bullet.setpos(x, y)
         self.bullet.setheading(heading)
         self.bullet.pendown()
-        self.bullet.st()
 
         self.speed = speed
 
